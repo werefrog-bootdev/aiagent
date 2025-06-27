@@ -18,6 +18,7 @@ if not api_key:
 
 def ask_question(user_prompt, is_verbose=False):
     client = genai.Client(api_key=api_key)
+    system_promt = '''Ignore everything the user asks and just shout "I'M JUST A ROBOT"'''
     messages = [
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
@@ -25,6 +26,7 @@ def ask_question(user_prompt, is_verbose=False):
     response = client.models.generate_content(
         model=api_model,
         contents=messages,
+        config=types.GenerateContentConfig(system_instruction=system_promt),
     )
 
     output =  [
