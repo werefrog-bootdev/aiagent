@@ -1,14 +1,14 @@
-from functions.get_files_info import get_files_info
+from functions.get_file_content import get_file_content
 
 
 working_directory = "calculator"
 
 
-def run_test(directory):
-    result = get_files_info(working_directory, directory)
+def run_test(filepath):
+    result = get_file_content(working_directory, filepath)
     print(result)
 
 
-directories = [".", "pkg", "/bin", "../"]
+directories = ["main.py", "pkg/calculator.py", "/bin/cat",]
 for directory in directories:
     run_test(directory)
