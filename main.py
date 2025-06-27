@@ -3,6 +3,7 @@ import sys
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
 
 load_dotenv()
@@ -15,16 +16,23 @@ if not api_key:
     sys.exit(1)
 
 
-def ask_question(prompt):
+def ask_question(user_prompt):
     client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(model=api_model,contents=prompt)    
+    messages = [
+        types.Content(role="user", parts=[types.Part(text=user_prompt)]),
+    ]
+
+    response = client.models.generate_content(
+        model=api_model,
+        contents=messages,
+    )    
     print(response.text)
     print("Prompt tokens:", response.usage_metadata.prompt_token_count)
     print("Response tokens:", response.usage_metadata.candidates_token_count)
 
 
-def main(prompt):
-    ask_question(prompt)
+def main(user_prompt):
+    ask_question(user_prompt)
 
 
 if __name__ == "__main__":
@@ -32,4 +40,4 @@ if __name__ == "__main__":
         print("Error: no prompt provided.\nUsage: python main.py \"Your prompt here\"")
         sys.exit(1)
 
-    main(prompt=sys.argv[1])
+    main(user_prompt=sys.argv[1])
