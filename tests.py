@@ -1,18 +1,20 @@
-from functions.write_file import write_file
+from functions.run_python_file import run_python_file
 
 
 working_directory = "calculator"
 
 
-def run_test(filepath, content):
-    result = write_file(working_directory, filepath, content)
+def run_test(filepath):
+    result = run_python_file(working_directory, filepath)
     print(result)
 
 
 cases = [
-    ("lorem.txt", "wait, this isn't lorem ipsum"),
-    ("pkg/morelorem.txt", "lorem ipsum dolor sit amet"),
-    ("/tmp/temp.txt", "this should not be allowed"),
+    "main.py",
+    "tests.py",
+    "../main.py",
+    "nonexistent.py",
 ]
-for filepath, content in cases:
-    run_test(filepath, content)
+
+for filepath in cases:
+    run_test(filepath)
