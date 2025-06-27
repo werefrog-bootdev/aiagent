@@ -1,14 +1,18 @@
-from functions.get_file_content import get_file_content
+from functions.write_file import write_file
 
 
 working_directory = "calculator"
 
 
-def run_test(filepath):
-    result = get_file_content(working_directory, filepath)
+def run_test(filepath, content):
+    result = write_file(working_directory, filepath, content)
     print(result)
 
 
-directories = ["main.py", "pkg/calculator.py", "/bin/cat",]
-for directory in directories:
-    run_test(directory)
+cases = [
+    ("lorem.txt", "wait, this isn't lorem ipsum"),
+    ("pkg/morelorem.txt", "lorem ipsum dolor sit amet"),
+    ("/tmp/temp.txt", "this should not be allowed"),
+]
+for filepath, content in cases:
+    run_test(filepath, content)
