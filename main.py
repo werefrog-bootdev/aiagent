@@ -16,7 +16,7 @@ if not api_key:
     sys.exit(1)
 
 
-def ask_question(user_prompt):
+def ask_question(user_prompt, is_verbose=False):
     client = genai.Client(api_key=api_key)
     messages = [
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
@@ -25,14 +25,22 @@ def ask_question(user_prompt):
     response = client.models.generate_content(
         model=api_model,
         contents=messages,
-    )    
-    print(response.text)
-    print("Prompt tokens:", response.usage_metadata.prompt_token_count)
-    print("Response tokens:", response.usage_metadata.candidates_token_count)
+    )
+
+    output =  [
+        f"User prompt: {user_prompt}\n",
+        f"Gemini response: {response.text}",
+        f"Prompt tokens: {response.usage_metadata.prompt_token_count}",
+        f"Response tokens: {response.usage_metadata.candidates_token_count}",
+    ] if is_verbose else [
+        response.text
+    ]
+
+    print(*output, sep="\n")
 
 
-def main(user_prompt):
-    ask_question(user_prompt)
+def main(user_prompt, is_verbose=False):
+    ask_question(user_prompt, is_verbose=is_verbose)
 
 
 if __name__ == "__main__":
@@ -40,4 +48,6 @@ if __name__ == "__main__":
         print("Error: no prompt provided.\nUsage: python main.py \"Your prompt here\"")
         sys.exit(1)
 
-    main(user_prompt=sys.argv[1])
+    is_verbose = len(sys.argv) > 2 and sys.argv[2] == "--verbose"
+
+    main(user_prompt=sys.argv[1], is_verbose=is_verbose)
