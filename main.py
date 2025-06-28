@@ -123,7 +123,7 @@ available_functions = types.Tool(
 
 def call_function(function_call_part, verbose=False):
     if verbose:
-        print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+        print(f" - Calling function: {function_call_part.name}({function_call_part.args})")
     else:
         print(f" - Calling function: {function_call_part.name}")
     
@@ -159,11 +159,8 @@ def call_function(function_call_part, verbose=False):
         ],
     )
 
-def main(user_prompt, is_verbose=False):
-    client = genai.Client(api_key=api_key)
-    messages = [types.Content(role="user", parts=[types.Part(text=user_prompt)])]
-
-    response = client.models.generate_content(
+def ask_question(client, messages, verbose=False):
+    return client.models.generate_content(
         model=api_model,
         contents=messages,
         config=types.GenerateContentConfig(
@@ -172,37 +169,46 @@ def main(user_prompt, is_verbose=False):
         ),
     )
 
-    function_calls = [
+
+
+def get_function_calls(response, user_prompt, is_verbose):
+    if not response.candidates:
+        return []
+    
+    return  [
         call_function(part.function_call, is_verbose)
         for candidate in response.candidates
         for part in candidate.content.parts
         if getattr(part, "function_call", False)
     ]
-    
-    function_call_descriptions = "\n".join(
-        f"-> {call.parts[0].function_response.response}"
-        for call in function_calls
-    )
+
+
+def main(user_prompt, is_verbose=False):
+    client = genai.Client(api_key=api_key)
+    messages = [types.Content(role="user", parts=[types.Part(text=user_prompt)])]
 
     if is_verbose:
-        output = [
-            f"User prompt: {user_prompt}",
-            f"Function calls: {function_call_descriptions or 'None'}",
-            f"Gemini response: {response.text}",
-            f"Prompt tokens: {response.usage_metadata.prompt_token_count}",
-            f"Response tokens: {response.usage_metadata.candidates_token_count}",
-        ]
-    else:
-        output = []
-        if response.text:
-            output.append(response.text)
-        if response.calls:
-            output.append(function_call_descriptions)
-        if not output:
-            output = ["No response from Gemini."]
-
-    print(*output, sep="\n")
-
+        print()
+        print("User prompt:")
+        print(user_prompt)
+        print()
+        print("Function calls:")
+            
+    for _ in range(20):  # Retry up to 3 times
+        response = ask_question(client, messages, is_verbose)
+        messages.extend(candidate.content for candidate in response.candidates)
+        
+        function_calls = get_function_calls(response, user_prompt, is_verbose)
+        if function_calls:
+            messages.extend(function_calls)
+            response = ask_question(client, messages, is_verbose)
+        else:
+            print(f"Finale response:")
+            print(response.text)
+            if is_verbose:
+                print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
+                print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+            break
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
