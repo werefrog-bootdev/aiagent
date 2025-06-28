@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 from dotenv import load_dotenv
 from google import genai
@@ -209,6 +210,8 @@ def main(user_prompt, is_verbose=False):
                 print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
                 print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
             break
+
+        time.sleep(5)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
